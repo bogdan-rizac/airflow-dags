@@ -22,7 +22,7 @@ def _training_model(model):
 
 with DAG("my_dag_2",
   start_date=datetime(2024, 2 ,1),
-  schedule_interval='@daily',
+  schedule_interval='*/2 * * * *',
   catchup=False):
 
   training_model_tasks = [
