@@ -48,14 +48,4 @@ with DAG("my_dag",
     bash_command=" echo 'inaccurate'"
   )
 
-  is_accurate = BashOperator(
-      task_id="is_accurate",
-      bash_command="echo 'accurate'"
-  )
-
-  is_inaccurate = BashOperator(
-      task_id="is_inaccurate",
-      bash_command="echo 'inaccurate'"
-  )
-
-  training_model_tasks >> choose_best_model >> [is_accurate, is_inaccurate]
+  training_model_tasks >> choose_best_model >> [accurate, inaccurate]
