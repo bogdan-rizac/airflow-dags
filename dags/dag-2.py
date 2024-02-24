@@ -3,6 +3,7 @@ from airflow.operators.python import PythonOperator, BranchPythonOperator
 from airflow.operators.bash import BashOperator
 from datetime import datetime
 from random import randint
+import time
 
 def _choose_best_model(ti):
   accuracies = ti.xcom_pull(task_ids=[
@@ -18,6 +19,7 @@ def _choose_best_model(ti):
 
 def _training_model(model):
   print(model)
+  time.sleep(3) # simulat long script duration
   return randint(1, 10)
 
 with DAG("my_dag_2",
