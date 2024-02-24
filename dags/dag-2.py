@@ -8,9 +8,11 @@ def _choose_best_model(ti):
   accuracies = ti.xcom_pull(task_ids=[
     'training_model_A',
     'training_model_B',
-    'training_model_C'
+    'training_model_C',
+    'training_model_D',
+    'training_model_E',
   ])
-  if max(accuracies) > 8:
+  if max(accuracies) > 7:
     return 'is_accurate'
   return 'is_inaccurate'
 
@@ -18,8 +20,8 @@ def _training_model(model):
   print(model)
   return randint(1, 10)
 
-with DAG("my_dag",
-  start_date=datetime(2024, 1 ,1),
+with DAG("my_dag_2",
+  start_date=datetime(2024, 2 ,1),
   schedule_interval='@daily',
   catchup=False):
 
@@ -30,7 +32,7 @@ with DAG("my_dag",
       op_kwargs={
         "model": model_id
       }
-    ) for model_id in ['A', 'B', 'C']
+    ) for model_id in ['A', 'B', 'C', 'D', 'E']
   ]
 
   choose_best_model = BranchPythonOperator(
