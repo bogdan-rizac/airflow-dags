@@ -18,7 +18,7 @@ default_args = {
 with DAG(
     dag_id='deactivate_inactive_users',
     default_args=default_args,
-    schedule_interval='@daily',  # Adjust as needed
+    schedule_interval='*/10 * * * *',  # Adjust as needed
 ) as dag:
 
     # Define a function to identify inactive users based on specific criteria
