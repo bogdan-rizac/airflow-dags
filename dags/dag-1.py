@@ -4,48 +4,50 @@ from airflow.operators.bash import BashOperator
 from datetime import datetime
 from random import randint
 
+
 def _choose_best_model(ti):
-  accuracies = ti.xcom_pull(task_ids=[
-    'training_model_A',
-    'training_model_B',
-    'training_model_C'
-  ])
-  if max(accuracies) > 8:
-    return 'is_accurate'
-  return 'is_inaccurate'
+    accuracies = ti.xcom_pull(task_ids=[
+        'training_model_A',
+        'training_model_B',
+        'training_model_C'
+    ])
+    if max(accuracies) > 8:
+        return 'is_accurate'
+    return 'is_inaccurate'
+
 
 def _training_model(model):
-  print(model)
-  return randint(1, 10)
+    print(model)
+    return randint(1, 10)
+
 
 with DAG("my_dag_1",
-  start_date=datetime(2024, 1 ,1),
-  schedule_interval='*/5 * * * *',
-  catchup=False):
+         start_date=datetime(2024, 1, 1),
+         schedule_interval='*/5 * * * *',
+         catchup=False):
+    training_model_tasks = [
+        PythonOperator(
+            task_id=f"training_model_{model_id}",
+            python_callable=_training_model,
+            op_kwargs={
+                "model": model_id
+            }
+        ) for model_id in ['A', 'B', 'C']
+    ]
 
-  training_model_tasks = [
-    PythonOperator(
-      task_id=f"training_model_{model_id}",
-      python_callable=_training_model,
-      op_kwargs={
-        "model": model_id
-      }
-    ) for model_id in ['A', 'B', 'C']
-  ]
+    choose_best_model = BranchPythonOperator(
+        task_id="choose_best_model",
+        python_callable=_choose_best_model
+    )
 
-  choose_best_model = BranchPythonOperator(
-    task_id="choose_best_model",
-    python_callable=_choose_best_model
-  )
+    accurate = BashOperator(
+        task_id="is_accurate",
+        bash_command="echo 'accurate'"
+    )
 
-  accurate = BashOperator(
-    task_id="is_accurate",
-    bash_command="echo 'accurate'"
-  )
+    inaccurate = BashOperator(
+        task_id="is_inaccurate",
+        bash_command=" echo 'inaccurate'"
+    )
 
-  inaccurate = BashOperator(
-    task_id="is_inaccurate",
-    bash_command=" echo 'inaccurate'"
-  )
-
-  training_model_tasks >> choose_best_model >> [accurate, inaccurate]
+    training_model_tasks >> choose_best_model >> [accurate, inaccurate]
